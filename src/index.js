@@ -69,6 +69,7 @@
 //       }
 //     });
 // }
+// import fetchCountries from './fetchCountries';
 import debounce from 'lodash.debounce';
 import Notiflix from 'notiflix';
 import './css/styles.css';
@@ -85,8 +86,8 @@ function fetchCountries() {
   const name = inputField.value.trim();
   const fields = 'name,capital,population,flags,languages';
   if (!name) {
-    countryList.innerHTML = '';
-    countryInfo.innerHTML = '';
+    clearCountryList();
+    clearCountryInfo();
     return;
   }
 
@@ -97,8 +98,8 @@ function fetchCountries() {
         Notiflix.Notify.info(
           'Too many matches found. Please enter a more specific name.'
         );
-        countryList.innerHTML = '';
-        countryInfo.innerHTML = '';
+        clearCountryList();
+        clearCountryInfo();
         return;
       }
 
@@ -121,8 +122,8 @@ function handleResponse(res) {
 
 function handleError(error) {
   if (error.message === '404') {
-    countryList.innerHTML = '';
-    countryInfo.innerHTML = '';
+    clearCountryList();
+    clearCountryInfo();
     Notiflix.Notify.failure('Oops, there is no country with that name');
   } else {
     console.error(error);
@@ -130,27 +131,37 @@ function handleError(error) {
 }
 
 function renderCountryList(data) {
-  const countryListItems = data.map(country => {
+  const countryListItems = data.map(({ name, flags }) => {
     return `<li>
-<img src="${country.flags.svg}" alt="${country.name.official} flag" width="50" />
-<p>Name: ${country.name.official}</p>
+<img src="${flags.svg}" alt="${name.official} flag" />
+<p> ${name.official}</p>
 </li>`;
   });
   countryList.innerHTML = countryListItems.join('');
-  countryInfo.innerHTML = '';
+  clearCountryInfo();
 }
 
 function renderCountryInfo(data) {
-  const countryInfoItems = data.map(country => {
-    return `<img src="${country.flags.svg}" alt="${
-      country.name.official
-    } flag" width="50" />
-                <p>Name: ${country.name.official}</p>
-                <p>Capital: ${country.capital}</p>
-                <p>Population: ${country.population}</p>
-                <p>Languages: ${Object.values(country.languages)}</p>`;
-  });
-
+  const countryInfoItems = data.map(
+    ({ name, capital, population, flags, languages }) => {
+      return `<div class = "wrapper"><img src="${flags.svg}" alt="${
+        name.official
+      } flag" />
+                <p>${name.official}</p></div>
+                <p><b>Capital:</b> ${capital}</p>
+                <p><b>Population:</b> ${population}</p>
+                <p><b>Languages:</b> ${Object.values(languages).join(', ')}
+                </p>`;
+    }
+  );
   countryInfo.innerHTML = countryInfoItems.join('');
+  clearCountryList();
+}
+
+function clearCountryList() {
   countryList.innerHTML = '';
+}
+
+function clearCountryInfo() {
+  countryInfo.innerHTML = '';
 }
